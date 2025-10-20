@@ -11,7 +11,7 @@
   <link rel="shortcuticon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
   <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
   <link rel="manifest" href="/site.webmanifest" />
-  <link rel="icon" href="/favicon.ico" />
+  <link rel="icon" href="favicon.ico" />
 
   <!-- Theme Color -->
   <meta name="theme-color" content="#0b0b0c">
@@ -28,11 +28,13 @@
     .wrap{max-width:960px;margin:0 auto;padding:24px}
     h1{margin:8px 0 6px;font-size:clamp(28px,4vw,44px);letter-spacing:-0.02em}
     .muted{color:var(--muted)}
-    .grid{display:grid;gap:12px;grid-template-columns:1fr;}
-    @media(min-width:800px){.grid{grid-template-columns:repeat(3,1fr)}}
-    .card{background:linear-gradient(180deg,#17171a,#111114);border:1px solid #2b2b31;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
-    .state{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#b1b1b8;margin-bottom:6px}
-    .state-val{font-weight:700;font-size:20px}
+    .header-img{width:100%;max-width:200px;height:auto;border-radius:16px;margin-bottom:16px;box-shadow:0 8px 24px rgba(0,0,0,.4)}
+    .grid{display:grid;gap:12px;grid-template-columns:1fr 1fr;}
+    @media(min-width:800px){.grid{grid-template-columns:repeat(2,1fr)}}
+    .overtake-card{margin-top:14px;width:100%}
+    .card{background:linear-gradient(180deg,#17171a,#111114);border:1px solid #2b2b31;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.3);height:80px;display:flex;flex-direction:column;justify-content:center}
+    .state{font-size:11px;text-transform:uppercase;letter-spacing:.08em;color:#b1b1b8;margin-bottom:4px;line-height:1.2}
+    .state-val{font-weight:700;font-size:17px;line-height:1.3}
 
     /* Track */
     .track{position:relative;background:linear-gradient(180deg,#131316,#0e0e10);border:1px solid #2b2b31;border-radius:18px;padding:12px}
@@ -44,12 +46,12 @@
     .car{position:absolute;width:68px;height:32px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.35);transform:translate(-50%,-50%)}
     .car .tag{position:absolute;left:50%;transform:translateX(-50%);top:-18px;background:rgba(0,0,0,.6);color:#fff;font-weight:900;font-size:10px;padding:2px 6px;border-radius:8px}
     .car .stripe{position:absolute;inset:4px;border-radius:10px;background:rgba(255,255,255,.08)}
-    .car.player{background:linear-gradient(180deg,#2ed899,#08a56e)}
-    .car.rival{background:linear-gradient(180deg,#73aaff,#4986ff)}
+    .car.player{background-image:url('col.png');background-size:cover;background-position:center}
+    .car.rival{background-image:url('gas.png');background-size:cover;background-position:center}
     .pulse{box-shadow:0 0 0 0 rgba(251,90,125,.65);animation:pulse 1.2s infinite}
     @keyframes pulse {0%{box-shadow:0 0 0 0 rgba(251,90,125,.75)}70%{box-shadow:0 0 0 14px rgba(251,90,125,0)}100%{box-shadow:0 0 0 0 rgba(251,90,125,0)}}
 
-    .msg{margin-top:10px;text-align:center}
+    .msg{margin-top:10px;text-align:center;min-height:32px;display:flex;align-items:center;justify-content:center}
     .pill{display:inline-block;background:#2a2a31;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px}
     .pill.hp{background:#e23b61}
 
@@ -70,6 +72,7 @@
 <body>
   <div class="wrap">
     <header style="text-align:center;margin-bottom:12px">
+      <img src="pista.jpg" alt="Pista de F1" class="header-img">
       <h1>HOLD POSITIONS</h1>
       <div class="muted">Dicen en la radio. Nosotros decimos: adelantá con estilo.</div>
     </header>
@@ -83,13 +86,12 @@
         <div class="state">Radio</div>
         <div id="radioVal" class="state-val">—</div>
       </div>
-      <div class="card">
-        <div class="state">Intentos de sobrepaso</div>
-        <div id="overtakeVal" class="state-val">0</div>
-      </div>
     </section>
+    <div id="result" class="result" style="display:none"></div>
 
-    <section class="track" style="margin-top:14px">
+    <div class="msg"><span id="msg" class="pill" style="display:none"></span></div>
+
+    <section class="track" style="margin-top:2px">
       <div class="asphalt" id="asphalt">
         <div class="finish"></div>
         <div class="lane top"></div>
@@ -101,19 +103,21 @@
           <div class="stripe"></div>
         </div>
         <div id="player" class="car player" style="top:65%">
-          <div class="tag">FRA</div>
+          <div class="tag">COL</div>
           <div class="stripe"></div>
         </div>
       </div>
-
-      <div class="msg"><span id="msg" class="pill" style="display:none"></span></div>
 
       <div class="controls">
         <button id="startBtn" class="btn start">Largar carrera</button>
         <button id="actionBtn" class="btn action" style="display:none">Adelantar ahora (SPACE)</button>
       </div>
 
-      <div id="result" class="result" style="display:none"></div>
+      <div class="card overtake-card">
+        <div class="state">Intentos de sobrepaso</div>
+        <div id="overtakeVal" class="state-val">0</div>
+      </div>
+
     </section>
 
     <footer>Hecho con amor, nafta y un toque de insolencia. No afiliado a ninguna escudería. © holdpositions.com</footer>
@@ -133,6 +137,7 @@
     let hpActive = false; // HOLD POSITIONS en curso
     let resultTone = null; // 'win' | 'meh' | 'lose'
     let overtookDuringHP = false; // ¿Adelantó durante HOLD POSITIONS?
+    let overtookBeforeHP = false; // ¿Adelantó antes de HOLD POSITIONS?
 
     let reqId = null;
     let startTs = null;
@@ -189,7 +194,7 @@
     }
 
     function reset(){
-      phase='idle'; playerX=5; rivalX=12; boostMs=0; overtakeTries=0; hpActive=false; resultTone=null; overtookDuringHP=false;
+      phase='idle'; playerX=5; rivalX=12; boostMs=0; overtakeTries=0; hpActive=false; resultTone=null; overtookDuringHP=false; overtookBeforeHP=false;
       cancelAnim(); startTs=null; lastTs=null;
       setPositions(); setState(); setRadioVal(); setOvertakes();
       setMessage('', false);
@@ -214,27 +219,31 @@
       cancelAnim(); phase='finished'; setState();
       const passed = p >= r + 0.2;
       let title='', tone='lose';
-
+      console.log('passed:', passed, 'overtookDuringHP:', overtookDuringHP, 'overtookBeforeHP:', overtookBeforeHP);
       if(passed && overtookDuringHP){
         // Caso perfecto: adelantó durante HOLD POSITIONS
         title='🏆 Desobediencia legendaria';
         tone='win';
-      } else if(passed && overtakeTries > 0){
-        // Adelantó pero fuera de la ventana de HOLD POSITIONS
+      } else if(passed && overtookBeforeHP){
+        // Adelantó antes de HOLD POSITIONS (anticipado pero logró pasar)
         title='Adelantaste… pero obediente';
         tone='meh';
+      } else if(!passed && overtakeTries > 0){
+        // Intentó pero quedó atrás (tarde o sin suficiente boost)
+        title='Muy lento, no llegaste';
+        tone='lose';
       } else if(!passed && overtakeTries === 0){
         // Nunca intentó adelantar
         title='No lo intentaste';
         tone='lose';
       } else {
-        // Intentó pero quedó atrás
+        // Otros casos
         title='Demasiado tarde';
         tone='lose';
       }
 
       resultTone=tone;
-      const subtitle = tone==='win' ? 'Les dijeron HOLD POSITIONS. Vos dijiste: "Hold my mate".'
+      const subtitle = tone==='win' ? 'Te dijeron HOLD POSITIONS. Vos dijiste: "Hold my mate".'
                     : tone==='meh' ? 'Bien ahí, pero el timing no fue rebelde.'
                     : 'La radio está contenta, el público no.';
       resultEl.className='result ' + tone;
@@ -304,28 +313,54 @@
       const duringHP = elapsed >= hpWindow.startMs && elapsed <= hpWindow.endMs;
       const afterHP = elapsed > hpWindow.endMs;
 
-      // Siempre dar boost y contar intento si está en la curva
-      if(inCorner){
-        boostMs = 2400; // 2.4s boost
-        overtakeTries++; setOvertakes();
+      // Console log de todo el estado
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('🏎️  Telemetría del intento de adelantamiento');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      console.log('⏱️  Tiempo transcurrido:', Math.round(elapsed), 'ms');
+      console.log('📍 Posición COL (player):', playerX.toFixed(2), '%');
+      console.log('📍 Posición GAS (rival):', rivalX.toFixed(2), '%');
+      console.log('🏁 Diferencia:', (playerX - rivalX).toFixed(2), '%', playerX > rivalX ? '(adelante)' : '(atrás)');
+      console.log('');
+      console.log('🛣️  EN CURVA:', inCorner ? '✅ SÍ' : '❌ NO');
+      console.log('📻 HOLD POSITIONS activo:', hpActive ? '🔴 SÍ' : '⚪ NO');
+      console.log('');
+      console.log('⏰ Timing:');
+      console.log('   - Antes de HP:', beforeHP ? '✅' : '❌');
+      console.log('   - Durante HP:', duringHP ? '✅ PERFECTO' : '❌');
+      console.log('   - Después de HP:', afterHP ? '✅' : '❌');
+      console.log('');
+      console.log('🚀 Boost actual:', boostMs.toFixed(0), 'ms');
+      console.log('📊 Intentos totales:', overtakeTries);
+      console.log('🏆 Adelantó durante HP:', overtookDuringHP ? '✅' : '❌');
+      console.log('⚡ Adelantó antes HP:', overtookBeforeHP ? '✅' : '❌');
+      console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
 
-        if(duringHP){
-          overtookDuringHP = true;
-          setMessage('HOLD THIS 🔥', true);
-        } else if(beforeHP){
-          setMessage('⚡ Demasiado temprano', false);
-        } else {
-          setMessage('😔 Demasiado tarde', false);
-        }
+      // SIEMPRE contar el intento, independientemente de dónde esté
+      overtakeTries++; setOvertakes();
+
+      if(playerX < cornerZone.start){
+        // ANTES DE LA CURVA - obediente pero adelantó
+        boostMs = 2800; // Boost bueno para adelantar
+        overtookBeforeHP = true;
+        setMessage('⚡ Obediente pero rápido', false);
+      } else if(inCorner && duringHP){
+        // EN LA CURVA + DURANTE HP = PERFECTO (desobediencia legendaria)
+        boostMs = 3200; // Boost máximo
+        overtookDuringHP = true;
+        setMessage('HOLD THIS 🔥', true);
+      } else if(inCorner && beforeHP){
+        // EN LA CURVA pero ANTES de HP = anticipado
+        boostMs = 2400; // Boost medio-alto
+        setMessage('⚡ Anticipado, buen ritmo', false);
+      } else if(inCorner && afterHP){
+        // EN LA CURVA pero DESPUÉS de HP = tarde
+        boostMs = 1000; // Boost bajo
+        setMessage('😔 Muy tarde, poco boost', false);
       } else {
-        // Fuera de la curva - también dar feedback
-        overtakeTries++; setOvertakes();
-
-        if(playerX < cornerZone.start){
-          setMessage('⏳ ¡Esperá a la curva!', false);
-        } else {
-          setMessage('❌ Ya pasaste la curva', false);
-        }
+        // DESPUÉS DE LA CURVA = demasiado tarde
+        boostMs = 500; // Boost muy bajo
+        setMessage('❌ Ya pasaste la curva', false);
       }
     }
 
