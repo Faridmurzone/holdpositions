@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Franco Colapinto — Hold Positions</title>
+  <meta name="description" content="They said HOLD POSITIONS. He said hold my mate." />
+
+  <!-- Favicons -->
+  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+  <link rel="shortcuticon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+  <link rel="manifest" href="/site.webmanifest" />
+  <link rel="icon" href="/favicon.ico" />
+
+  <!-- Theme Color -->
+  <meta name="theme-color" content="#0b0b0c">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <style>
+    :root{
+      --bg:#0b0b0c; --panel:#141417; --muted:#a3a3a3; --text:#f3f3f3; --line:#2a2a2e; --accent:#5ee6a8; --accent2:#82b6ff;
+      --rose:#fb5a7d; --warn:#f3b91b; --ok:#28c081;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%;}
+    body{margin:0;background:radial-gradient(1200px 600px at 50% -10%, #1a1a1f 0%, var(--bg) 55%);color:var(--text);font:16px/1.5 system-ui, -apple-system, Segoe UI, Roboto, Inter, Arial, sans-serif;}
+    .wrap{max-width:960px;margin:0 auto;padding:24px}
+    h1{margin:8px 0 6px;font-size:clamp(28px,4vw,44px);letter-spacing:-0.02em}
+    .muted{color:var(--muted)}
+    .grid{display:grid;gap:12px;grid-template-columns:1fr;}
+    @media(min-width:800px){.grid{grid-template-columns:repeat(3,1fr)}}
+    .card{background:linear-gradient(180deg,#17171a,#111114);border:1px solid #2b2b31;border-radius:16px;padding:14px;box-shadow:0 8px 24px rgba(0,0,0,.3)}
+    .state{font-size:13px;text-transform:uppercase;letter-spacing:.08em;color:#b1b1b8;margin-bottom:6px}
+    .state-val{font-weight:700;font-size:20px}
+
+    /* Track */
+    .track{position:relative;background:linear-gradient(180deg,#131316,#0e0e10);border:1px solid #2b2b31;border-radius:18px;padding:12px}
+    .asphalt{position:relative;height:180px;border-radius:12px;background:linear-gradient(180deg,#111114,#0b0b0d)}
+    .finish{position:absolute;top:0;bottom:0;right:0;width:3px;background:linear-gradient(#fff,#bbb);opacity:.35}
+    .lane{position:absolute;left:0;right:0;height:2px;background:#3a3a42}
+    .lane.top{top:35%}.lane.bot{top:65%}
+    .corner{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,rgba(99,102,241,.08),rgba(99,102,241,.14));border-left:1px dashed rgba(99,102,241,.35);border-right:1px dashed rgba(99,102,241,.35)}
+    .car{position:absolute;width:68px;height:32px;border-radius:12px;box-shadow:0 6px 14px rgba(0,0,0,.35);transform:translate(-50%,-50%)}
+    .car .tag{position:absolute;left:50%;transform:translateX(-50%);top:-18px;background:rgba(0,0,0,.6);color:#fff;font-weight:900;font-size:10px;padding:2px 6px;border-radius:8px}
+    .car .stripe{position:absolute;inset:4px;border-radius:10px;background:rgba(255,255,255,.08)}
+    .car.player{background:linear-gradient(180deg,#2ed899,#08a56e)}
+    .car.rival{background:linear-gradient(180deg,#73aaff,#4986ff)}
+    .pulse{box-shadow:0 0 0 0 rgba(251,90,125,.65);animation:pulse 1.2s infinite}
+    @keyframes pulse {0%{box-shadow:0 0 0 0 rgba(251,90,125,.75)}70%{box-shadow:0 0 0 14px rgba(251,90,125,0)}100%{box-shadow:0 0 0 0 rgba(251,90,125,0)}}
+
+    .msg{margin-top:10px;text-align:center}
+    .pill{display:inline-block;background:#2a2a31;color:#fff;padding:6px 10px;border-radius:999px;font-weight:700;font-size:13px}
+    .pill.hp{background:#e23b61}
+
+    .controls{display:flex;gap:10px;justify-content:center;align-items:center;margin-top:14px;flex-wrap:wrap}
+    .btn{border:0;border-radius:14px;padding:12px 16px;font-weight:800;letter-spacing:.02em;cursor:pointer;color:#0c0c0f;transition:transform .04s ease, filter .15s ease}
+    .btn:active{transform:translateY(1px)}
+    .btn.start{background:linear-gradient(180deg,#2ed899,#15b57d)}
+    .btn.action{background:linear-gradient(180deg,#7191ff,#5171ff)}
+
+    .result{margin-top:16px;text-align:center;border-radius:16px;padding:18px;font-weight:700}
+    .win{background:#0e2a21;color:#d6fff0;border:1px solid #1a6c52}
+    .meh{background:#2a220a;color:#fff2ca;border:1px solid #957a22}
+    .lose{background:#2b1116;color:#ffd6df;border:1px solid #8a2436}
+
+    footer{margin-top:26px;text-align:center;color:#9a9aa2;font-size:12px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header style="text-align:center;margin-bottom:12px">
+      <h1>HOLD POSITIONS</h1>
+      <div class="muted">Dicen en la radio. Nosotros decimos: adelantá con estilo.</div>
+    </header>
+
+    <section class="grid" aria-label="Estado de carrera">
+      <div class="card">
+        <div class="state">Estado</div>
+        <div id="stateVal" class="state-val">Listo para largar</div>
+      </div>
+      <div class="card">
+        <div class="state">Radio</div>
+        <div id="radioVal" class="state-val">—</div>
+      </div>
+      <div class="card">
+        <div class="state">Intentos de sobrepaso</div>
+        <div id="overtakeVal" class="state-val">0</div>
+      </div>
+    </section>
+
+    <section class="track" style="margin-top:14px">
+      <div class="asphalt" id="asphalt">
+        <div class="finish"></div>
+        <div class="lane top"></div>
+        <div class="lane bot"></div>
+        <div id="corner" class="corner"></div>
+
+        <div id="rival" class="car rival" style="top:35%">
+          <div class="tag">GAS</div>
+          <div class="stripe"></div>
+        </div>
+        <div id="player" class="car player" style="top:65%">
+          <div class="tag">FRA</div>
+          <div class="stripe"></div>
+        </div>
+      </div>
+
+      <div class="msg"><span id="msg" class="pill" style="display:none"></span></div>
+
+      <div class="controls">
+        <button id="startBtn" class="btn start">Largar carrera</button>
+        <button id="actionBtn" class="btn action" style="display:none">Adelantar ahora (SPACE)</button>
+      </div>
+
+      <div id="result" class="result" style="display:none"></div>
+    </section>
+
+    <footer>Hecho con amor, nafta y un toque de insolencia. No afiliado a ninguna escudería. © holdpositions.com</footer>
+  </div>
+
+  <script>
+    // --- Estado ---
+    const trackLength = 100;
+    const cornerZone = { start: 46, end: 62 }; // % del track
+    const hpWindow = { startMs: 3400, endMs: 4000 }; // ms desde largada (mitad de la curva)
+
+    let phase = 'idle'; // idle | racing | finished
+    let playerX = 5; // %
+    let rivalX = 12; // % (arranca adelante)
+    let boostMs = 0; // tiempo de DRS espiritual
+    let overtakeTries = 0;
+    let hpActive = false; // HOLD POSITIONS en curso
+    let resultTone = null; // 'win' | 'meh' | 'lose'
+    let overtookDuringHP = false; // ¿Adelantó durante HOLD POSITIONS?
+
+    let reqId = null;
+    let startTs = null;
+    let lastTs = null;
+
+    // --- UI refs ---
+    const stateVal = document.getElementById('stateVal');
+    const radioVal = document.getElementById('radioVal');
+    const overtakeVal = document.getElementById('overtakeVal');
+    const rivalEl = document.getElementById('rival');
+    const playerEl = document.getElementById('player');
+    const msgEl = document.getElementById('msg');
+    const resultEl = document.getElementById('result');
+    const startBtn = document.getElementById('startBtn');
+    const actionBtn = document.getElementById('actionBtn');
+    const cornerEl = document.getElementById('corner');
+
+    // Pintar zona de curva proporcional al ancho (con CSS %)
+    function renderCorner(){
+      cornerEl.style.left = cornerZone.start + '%';
+      cornerEl.style.width = (cornerZone.end - cornerZone.start) + '%';
+    }
+
+    // --- Helpers ---
+    function setMessage(t, isHP){
+      if(!t){ msgEl.style.display='none'; return; }
+      msgEl.textContent = t;
+      msgEl.className = 'pill' + (isHP ? ' hp' : '');
+      msgEl.style.display = 'inline-block';
+    }
+    function setState(){
+      if(phase==='idle') stateVal.textContent = 'Listo para largar';
+      else if(phase==='racing') stateVal.textContent = 'En carrera';
+      else stateVal.textContent = 'Finalizada';
+    }
+    function setRadioVal(){
+      if(hpActive) {
+        radioVal.textContent = '🔴 HOLD POSITIONS';
+        radioVal.style.color = '#fb5a7d';
+      } else if(phase === 'racing') {
+        radioVal.textContent = 'Silencio...';
+        radioVal.style.color = '';
+      } else {
+        radioVal.textContent = '—';
+        radioVal.style.color = '';
+      }
+    }
+    function setOvertakes(){ overtakeVal.textContent = String(overtakeTries); }
+
+    function setPositions(){
+      rivalEl.style.left = Math.min(100, Math.max(0, rivalX)) + '%';
+      playerEl.style.left = Math.min(100, Math.max(0, playerX)) + '%';
+      if(hpActive){ playerEl.classList.add('pulse'); } else { playerEl.classList.remove('pulse'); }
+    }
+
+    function reset(){
+      phase='idle'; playerX=5; rivalX=12; boostMs=0; overtakeTries=0; hpActive=false; resultTone=null; overtookDuringHP=false;
+      cancelAnim(); startTs=null; lastTs=null;
+      setPositions(); setState(); setRadioVal(); setOvertakes();
+      setMessage('', false);
+      resultEl.style.display='none'; resultEl.textContent=''; resultEl.className='result';
+      startBtn.textContent='Largar carrera'; startBtn.style.display='inline-block';
+      actionBtn.style.display='none';
+    }
+
+    function start(){
+      reset();
+      phase='racing';
+      setState();
+      setRadioVal(); // Actualizar radio al iniciar
+      startBtn.style.display='none';
+      actionBtn.style.display='inline-block';
+      startTs = null; // Forzar reset del timestamp
+      lastTs = null;
+      reqId = requestAnimationFrame(loop);
+    }
+
+    function finish(p, r){
+      cancelAnim(); phase='finished'; setState();
+      const passed = p >= r + 0.2;
+      let title='', tone='lose';
+
+      if(passed && overtookDuringHP){
+        // Caso perfecto: adelantó durante HOLD POSITIONS
+        title='🏆 Desobediencia legendaria';
+        tone='win';
+      } else if(passed && overtakeTries > 0){
+        // Adelantó pero fuera de la ventana de HOLD POSITIONS
+        title='Adelantaste… pero obediente';
+        tone='meh';
+      } else if(!passed && overtakeTries === 0){
+        // Nunca intentó adelantar
+        title='No lo intentaste';
+        tone='lose';
+      } else {
+        // Intentó pero quedó atrás
+        title='Demasiado tarde';
+        tone='lose';
+      }
+
+      resultTone=tone;
+      const subtitle = tone==='win' ? 'Les dijeron HOLD POSITIONS. Vos dijiste: "Hold my mate".'
+                    : tone==='meh' ? 'Bien ahí, pero el timing no fue rebelde.'
+                    : 'La radio está contenta, el público no.';
+      resultEl.className='result ' + tone;
+      resultEl.innerHTML = '<div style="font-size:22px;margin-bottom:6px">'+title+'</div>'+
+                           '<div style="opacity:.9">'+subtitle+'</div>'+
+                           '<div style="opacity:.7;margin-top:8px;font-size:13px">Tip: presioná la barra espaciadora JUSTO cuando dicen "HOLD POSITIONS" en la curva 🔥</div>';
+      resultEl.style.display='block';
+      startBtn.textContent='Correr de nuevo';
+      startBtn.style.display='inline-block';
+      actionBtn.style.display='none';
+    }
+
+    function cancelAnim(){ if(reqId) cancelAnimationFrame(reqId); reqId=null; }
+
+    function loop(ts){
+      reqId = requestAnimationFrame(loop);
+      if(!startTs) startTs = ts;
+      if(!lastTs) lastTs = ts;
+      const elapsed = ts - startTs;
+      const dt = Math.min(32, ts - lastTs); // clamp
+      lastTs = ts;
+
+      // Radio HOLD POSITIONS
+      const hpNow = elapsed >= hpWindow.startMs && elapsed <= hpWindow.endMs;
+      if(hpNow !== hpActive){
+        hpActive = hpNow;
+        setState();
+        setRadioVal();
+        console.log('HP cambió:', hpActive, 'Elapsed:', elapsed);
+      }
+      if(hpActive) setMessage('HOLD POSITIONS', true); else setMessage('', false);
+
+      // Velocidades (duplicadas para mejor ritmo)
+      const rivalSpeed = 0.016; // %/ms
+      const playerBase = 0.014;
+      const boost = boostMs > 0 ? 0.024 : 0;
+      let dPlayer = (playerBase + boost) * dt;
+      let dRival = rivalSpeed * dt;
+
+      // Efecto curva (reducción proporcional, no absoluta)
+      const nextP = playerX + dPlayer;
+      const nextR = rivalX + dRival;
+      const inCornerP = nextP >= cornerZone.start && nextP <= cornerZone.end;
+      const inCornerR = nextR >= cornerZone.start && nextR <= cornerZone.end;
+      if(inCornerP) dPlayer *= 0.70; // Pierde 30% de velocidad
+      if(inCornerR) dRival *= 0.60; // Pierde 40% de velocidad (más que el jugador)
+
+      playerX = Math.min(trackLength, playerX + dPlayer);
+      rivalX  = Math.min(trackLength, rivalX + dRival);
+
+      if(boostMs > 0) boostMs = Math.max(0, boostMs - dt);
+
+      setPositions();
+
+      // Chequear final
+      if(playerX >= trackLength || rivalX >= trackLength){ finish(playerX, rivalX); }
+    }
+
+    function attemptOvertake(){
+      if(phase !== 'racing') return;
+
+      const elapsed = lastTs - startTs;
+      const inCorner = playerX >= cornerZone.start && playerX <= cornerZone.end;
+
+      // Determinar si estamos en ventana de HOLD POSITIONS
+      const beforeHP = elapsed < hpWindow.startMs;
+      const duringHP = elapsed >= hpWindow.startMs && elapsed <= hpWindow.endMs;
+      const afterHP = elapsed > hpWindow.endMs;
+
+      // Siempre dar boost y contar intento si está en la curva
+      if(inCorner){
+        boostMs = 2400; // 2.4s boost
+        overtakeTries++; setOvertakes();
+
+        if(duringHP){
+          overtookDuringHP = true;
+          setMessage('HOLD THIS 🔥', true);
+        } else if(beforeHP){
+          setMessage('⚡ Demasiado temprano', false);
+        } else {
+          setMessage('😔 Demasiado tarde', false);
+        }
+      } else {
+        // Fuera de la curva - también dar feedback
+        overtakeTries++; setOvertakes();
+
+        if(playerX < cornerZone.start){
+          setMessage('⏳ ¡Esperá a la curva!', false);
+        } else {
+          setMessage('❌ Ya pasaste la curva', false);
+        }
+      }
+    }
+
+    // Eventos
+    startBtn.addEventListener('click', start);
+    actionBtn.addEventListener('click', attemptOvertake);
+    window.addEventListener('keydown', (e)=>{
+      if(e.code==='Space') { e.preventDefault(); attemptOvertake(); }
+      if(e.code==='KeyR' && phase==='finished'){ start(); }
+    });
+
+    // Init
+    renderCorner();
+    reset();
+  </script>
+</body>
+</html>
